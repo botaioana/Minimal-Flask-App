@@ -1,20 +1,13 @@
-# Importing flask module in the project is mandatory
-# An object of Flask class is our WSGI application.
 from flask import Flask
-
-# Flask constructor takes the name of 
-# current module (__name__) as argument.
 app = Flask(__name__)
 
-# The route() function of the Flask class is a decorator, 
-# which tells the application which URL should call 
-# the associated function.
 @app.route('/')
-# ‘/’ URL is bound with hello_world() function.
 def hello():
-    return "Salut! Aplicația rulează în Docker pe portul 5000!"
+    return "Salut! Aplicația funcționează corect!"
 
-# main driver function
+@app.route('/health')
+def health():
+    return "OK", 200
+
 if __name__ == '__main__':
-    # Rulează serverul pe toate interfețele de rețea (0.0.0.0) și portul 5000
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)  # debug=False pentru producție
