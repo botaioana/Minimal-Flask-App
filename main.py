@@ -11,12 +11,10 @@ app = Flask(__name__)
 # the associated function.
 @app.route('/')
 # ‘/’ URL is bound with hello_world() function.
-def hello_world():
-    return 'Hello World'
+def hello():
+    return "Salut! Aplicația rulează în Docker pe portul 5000!"
 
 # main driver function
 if __name__ == '__main__':
-
-    # run() method of Flask class runs the application 
-    # on the local development server.
-    app.run()
+    # Rulează serverul pe toate interfețele de rețea (0.0.0.0) și portul 5000
+    app.run(host='0.0.0.0', port=5000, debug=True)
