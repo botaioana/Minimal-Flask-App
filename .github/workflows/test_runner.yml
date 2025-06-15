@@ -2,7 +2,7 @@ name: Deploy to EC2
 on: [push]
 
 env:
-  DOCKER_INSTANCE: 'ec2-user@your-ec2-ip'  # Înlocuiește cu IP-ul real
+  DOCKER_INSTANCE: 'ec2-user@51.20.3.229'
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'  # Folosește un tag static
