@@ -1,15 +1,39 @@
-name: Test Self-Hosted Runner
+name: Docker Build & Deploy
 
-on: [push]  # Declanșează pipeline-ul la push
+on:
+  push:
+    branches: [main]
 
 jobs:
-  test-job:
-    runs-on: [self-hosted, Linux, X64]  # Folosește label-urile runner-ului tău
+  build-and-deploy:
+    runs-on: [self-hosted, Linux, X64]  # Rulează pe prima instanță EC2 (runner-ul)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run a simple command
+      - name: Login to Docker Hub (opțional)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build Docker image
         run: |
-          echo "Runner-ul funcționează pe EC2!"
-          uname -a  # Afișează informații despre sistem
+          docker build -t my-app:latest .
+          docker tag my-app:latest username/my-app:latest  # Pentru Docker Hub/ECR
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}       # IP-ul celei de-a doua instanțe EC2
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}  # Cheia privată pentru EC2
+        run: |
+          # 1. Exportă imaginea și o copiază pe EC2
+          docker save my-app:latest | ssh -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" ec2-user@$EC2_HOST "docker load"
+
+          # 2. Rulează containerul pe EC2
+          ssh -i "$SSH_PRIVATE_KEY" ec2-user@$EC2_HOST "
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d --name my-app -p 80:3000 my-app:latest
+          "
