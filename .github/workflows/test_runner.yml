@@ -1,39 +1,65 @@
-name: Docker Build & Deploy
+name: Deploy to EC2
+on: [push]
 
-on:
-  push:
-    branches: [main]
+env:
+  DOCKER_INSTANCE: 'ec2-user@51.20.3.229'
+  PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
+  DOCKER_IMAGE: 'flask-app'
 
 jobs:
-  build-and-deploy:
-    runs-on: [self-hosted, Linux, X64]  # Rulează pe prima instanță EC2 (runner-ul)
+  deploy:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Docker Hub (opțional)
-        if: github.ref == 'refs/heads/main'
-        uses: docker/login-action@v2
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Build Docker image
+      - name: Clone/Pull on Docker Instance
         run: |
-          docker build -t my-app:latest .
-          docker tag my-app:latest username/my-app:latest  # Pentru Docker Hub/ECR
+          ssh -o StrictHostKeyChecking=no $DOCKER_INSTANCE "
+            if [ ! -d '$PROJECT_DIR' ]; then
+              git clone https://github.com/botaioana/Minimal-Flask-App.git $PROJECT_DIR
+            else
+              cd $PROJECT_DIR && git pull origin main
+            fi
+          "
 
-      - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}       # IP-ul celei de-a doua instanțe EC2
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}  # Cheia privată pentru EC2
+      - name: Build Docker Image
         run: |
-          # 1. Exportă imaginea și o copiază pe EC2
-          docker save my-app:latest | ssh -o StrictHostKeyChecking=no -i "$SSH_PRIVATE_KEY" ec2-user@$EC2_HOST "docker load"
+          ssh -o StrictHostKeyChecking=no $DOCKER_INSTANCE "
+            cd $PROJECT_DIR && docker build -t $DOCKER_IMAGE:${{ github.run_id }} .
+          "
 
-          # 2. Rulează containerul pe EC2
-          ssh -i "$SSH_PRIVATE_KEY" ec2-user@$EC2_HOST "
-            docker stop my-app || true
-            docker rm my-app || true
-            docker run -d --name my-app -p 80:3000 my-app:latest
+      - name: Stop Previous Container
+        run: |
+          ssh -o StrictHostKeyChecking=no $DOCKER_INSTANCE "
+            CONTAINER_ID=\$(docker ps -aq --filter name=$DOCKER_IMAGE)
+            if [ ! -z \"\$CONTAINER_ID\" ]; then
+              docker stop \$CONTAINER_ID && docker rm \$CONTAINER_ID
+              sleep 15
+            fi
+          "
+
+      - name: Stop Previous Image
+        run: |
+          ssh -o StrictHostKeyChecking=no $DOCKER_INSTANCE "
+            IMAGE_ID=\$(docker images -q $DOCKER_IMAGE)
+            if [ ! -z \"\$IMAGE_ID\" ]; then
+              docker rmi \$IMAGE_ID
+              sleep 15
+            fi
+          "
+
+      - name: Deploy Container
+        run: |
+          ssh -o StrictHostKeyChecking=no $DOCKER_INSTANCE "
+            while netstat -tuln | grep -q ':5000'; do
+              echo 'Port 5000 in use. Waiting...'
+              sleep 5
+            done
+            docker run -d --name $DOCKER_IMAGE -p 5000:5000 $DOCKER_IMAGE:${{ github.run_id }}
           "
