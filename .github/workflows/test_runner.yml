@@ -1,0 +1,15 @@
+name: Test Self-Hosted Runner
+
+on: [push]  # Declanșează pipeline-ul la push
+
+jobs:
+  test-job:
+    runs-on: [self-hosted, Linux, X64]  # Folosește label-urile runner-ului tău
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run a simple command
+        run: |
+          echo "Runner-ul funcționează pe EC2!"
+          uname -a  # Afișează informații despre sistem
