@@ -1,27 +1,27 @@
-name: Deploy to EC2 (Amazon Linux 2023)
+name: Deploy to EC2 (Self-Hosted Runner + Amazon Linux 2023)
 on: [push]
 
 env:
-  EC2_INSTANCE: 'ec2-user@51.20.3.229'
+  APP_INSTANCE: 'ec2-user@13.60.95.182'  # Instanța țintă unde rulează aplicația
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]  # Rulează pe instanța ta EC2 (13.51.205.0)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install SSH key
+      - name: Install SSH key for target instance
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Cheia pentru instanța țintă (13.60.95.182)
 
-      - name: Setup EC2 environment
+      - name: Setup EC2 environment (on target instance)
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_INSTANCE "
+          ssh -o StrictHostKeyChecking=no $APP_INSTANCE "
             # Install required packages
             sudo dnf update -y
             sudo dnf install -y docker git
@@ -38,16 +38,16 @@ jobs:
             [ ! -d '$PROJECT_DIR/.git' ] && git clone https://github.com/botaioana/Minimal-Flask-App.git $PROJECT_DIR || true
           "
 
-      - name: Sync code
+      - name: Sync code to target instance
         run: |
           rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
             --exclude='.git/' \
             --exclude='.github/' \
-            --delete ./ $EC2_INSTANCE:$PROJECT_DIR/
+            --delete ./ $APP_INSTANCE:$PROJECT_DIR/
 
-      - name: Deploy Docker
+      - name: Deploy Docker container
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_INSTANCE "
+          ssh -o StrictHostKeyChecking=no $APP_INSTANCE "
             cd $PROJECT_DIR
             
             # Force rebuild to avoid cache issues
