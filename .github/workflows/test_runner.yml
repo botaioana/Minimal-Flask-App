@@ -1,4 +1,4 @@
-2name: Security Scan and Deploy to EC2
+name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
