@@ -2,7 +2,7 @@ name: Deploy to EC2 (Self-Hosted Runner + Amazon Linux 2023)
 on: [push]
 
 env:
-  APP_INSTANCE: 'ec2-user@13.60.95.182'  # Instanța țintă unde rulează aplicația
+  APP_INSTANCE: 'ec2-user@16.171.13.66'  # Instanța țintă unde rulează aplicația
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
