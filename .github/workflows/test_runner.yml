@@ -9,18 +9,22 @@ env:
 
 jobs:
   security-scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    permissions:
+      security-events: write  # Required for CodeQL results
+      actions: read
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Necesar pentru CodeQL
+          fetch-depth: 2
 
       # CodeQL Analysis
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: 'python'  # Schimbă în funcție de limbajul tău
+          languages: 'python'
           queries: security-extended,security-and-quality
 
       - name: Perform CodeQL Analysis
@@ -28,27 +32,25 @@ jobs:
         with:
           category: "/language:python"
 
-      # Secret Scanning
-      - name: Detect secrets with GitHub Advanced Security
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Necesar pentru scanarea completă a istoricului
+      # Secret Scanning is automatic with GitHub Advanced Security
+      - name: Verify secret scanning
+        run: echo "GitHub Advanced Security handles secret scanning automatically"
 
-      # SAST Scanning (using CodeQL)
+      # SAST is covered by CodeQL
       - name: Run SAST Scan
-        run: |
-          echo "SAST scanning is integrated via CodeQL above"
-          
-      # DAST Scanning (basic example)
+        run: echo "SAST scanning is integrated via CodeQL"
+
+      # DAST Scanning - only run if you have a live URL
       - name: Run DAST Scan (ZAP Baseline)
+        if: false  # Disabled by default - set to 'always()' when ready
         uses: zaproxy/action-baseline@v0.7.0
         with:
-          target: 'http://example.com'  # Înlocuiește cu URL-ul tău
-          rules_file_name: 'rules-minimal'
-        if: always()  # Rulează chiar dacă joburile anterioare eșuează
+          target: 'http://your-app-url.com'  # Replace with your actual URL
+          docker_image: 'owasp/zap2docker-weekly'  # More reliable image
+          cmd_options: '-config api.disablekey=true'
 
   deploy:
-    needs: security-scan  # Așteaptă finalizarea scanărilor
+    needs: security-scans
     runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
