@@ -8,10 +8,10 @@ env:
   DOCKER_TAG: 'latest'
 
 jobs:
-  security-scan:
+  security-scan:  # This is the correct job name
     runs-on: [self-hosted, linux]
     permissions:
-      security-events: write  # Required for CodeQL results
+      security-events: write
       actions: read
       contents: read
     steps:
@@ -50,7 +50,7 @@ jobs:
           cmd_options: '-config api.disablekey=true'
 
   deploy:
-    needs: security-scans
+    needs: security-scan  # Fixed to match the actual job name above
     runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
