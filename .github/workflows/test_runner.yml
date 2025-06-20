@@ -31,8 +31,9 @@ jobs:
         with:
           category: "/language:python"
         env:
-          CODEQL_RAM: "4096"  # 4 GB
+          CODEQL_RAM: "1024"
           CODEQL_THREADS: "1"
+
 
       # Secret Scanning is automatic with GitHub Advanced Security
       - name: Verify secret scanning
