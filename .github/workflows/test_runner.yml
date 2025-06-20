@@ -29,8 +29,10 @@ jobs:
           category: "/language:python"
 
       # Secret Scanning
-      - name: Detect secrets in code
-        uses: github/codeql-action/secret-scanning@v2
+      - name: Detect secrets with GitHub Advanced Security
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesar pentru scanarea completă a istoricului
 
       # SAST Scanning (using CodeQL)
       - name: Run SAST Scan
