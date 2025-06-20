@@ -1,15 +1,53 @@
-name: Deploy to EC2 (Self-Hosted Runner + Amazon Linux 2023)
+name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
-  APP_INSTANCE: 'ec2-user@16.171.13.66'  # Instanța țintă unde rulează aplicația
+  APP_INSTANCE: 'ec2-user@16.171.13.66'
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
 
 jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Necesar pentru CodeQL
+
+      # CodeQL Analysis
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: 'python'  # Schimbă în funcție de limbajul tău
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:python"
+
+      # Secret Scanning
+      - name: Detect secrets in code
+        uses: github/codeql-action/secret-scanning@v2
+
+      # SAST Scanning (using CodeQL)
+      - name: Run SAST Scan
+        run: |
+          echo "SAST scanning is integrated via CodeQL above"
+          
+      # DAST Scanning (basic example)
+      - name: Run DAST Scan (ZAP Baseline)
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'http://example.com'  # Înlocuiește cu URL-ul tău
+          rules_file_name: 'rules-minimal'
+        if: always()  # Rulează chiar dacă joburile anterioare eșuează
+
   deploy:
-    runs-on: [self-hosted, linux]  # Rulează pe instanța ta EC2 (13.51.205.0)
+    needs: security-scan  # Așteaptă finalizarea scanărilor
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,23 +55,16 @@ jobs:
       - name: Install SSH key for target instance
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Cheia pentru instanța țintă (13.60.95.182)
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Setup EC2 environment (on target instance)
         run: |
           ssh -o StrictHostKeyChecking=no $APP_INSTANCE "
-            # Install required packages
             sudo dnf update -y
             sudo dnf install -y docker git
-            
-            # Start Docker
             sudo systemctl enable docker
             sudo systemctl start docker
-            
-            # Add ec2-user to docker group
             sudo usermod -aG docker ec2-user
-            
-            # Prepare project directory
             mkdir -p $PROJECT_DIR
             [ ! -d '$PROJECT_DIR/.git' ] && git clone https://github.com/botaioana/Minimal-Flask-App.git $PROJECT_DIR || true
           "
@@ -49,14 +80,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no $APP_INSTANCE "
             cd $PROJECT_DIR
-            
-            # Force rebuild to avoid cache issues
             docker build --no-cache -t $DOCKER_IMAGE:$DOCKER_TAG .
-            
-            # Stop and remove old containers
             docker ps -aq --filter name=$DOCKER_IMAGE | xargs -r docker stop | xargs -r docker rm || true
-            
-            # Run with production settings
             docker run -d \
               --name $DOCKER_IMAGE \
               -p 80:5000 \
