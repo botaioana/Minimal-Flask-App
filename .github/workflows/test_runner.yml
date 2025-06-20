@@ -1,4 +1,4 @@
-name: Security Scan and Deploy to EC2
+2name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
@@ -8,7 +8,7 @@ env:
   DOCKER_TAG: 'latest'
 
 jobs:
-  security-scan:  # This is the correct job name
+  security-scan:
     runs-on: [self-hosted, linux]
     permissions:
       security-events: write
@@ -20,7 +20,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      # CodeQL Analysis
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
@@ -31,6 +30,10 @@ jobs:
         uses: github/codeql-action/analyze@v2
         with:
           category: "/language:python"
+          ram: 4096  # 4GB RAM allocation
+          threads: 1  # Single thread
+        env:
+          CODEQL_RAM: "4096"  # Java memory limit
 
       # Secret Scanning is automatic with GitHub Advanced Security
       - name: Verify secret scanning
