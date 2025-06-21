@@ -9,7 +9,7 @@ env:
 
 jobs:
   security-scan:
-    runs-on: ubuntu-latest  # GitHub-hosted runner (better resources)
+    runs-on: ubuntu-latest
     permissions:
       security-events: write
       actions: read
@@ -29,13 +29,15 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deployment-package
           path: |
             *
             !.github/
             !.gitignore
+          compression-level: 0  # Faster for small projects
+          retention-days: 1
 
   deploy:
     needs: security-scan  # Fixed to match the actual job name above
