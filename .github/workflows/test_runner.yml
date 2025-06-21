@@ -23,22 +23,13 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: 'python'
-          queries: security-and-quality
+          disable-default-queries: true  # Critical fix
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4
         with:
-          name: deployment-package
-          path: |
-            *
-            !.github/
-            !.gitignore
-          compression-level: 0  # Faster for small projects
-          retention-days: 1
-
+          category: "/language:python"
   deploy:
     needs: security-scan  # Fixed to match the actual job name above
     runs-on: [self-hosted, linux]
