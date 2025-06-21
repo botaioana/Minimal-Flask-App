@@ -2,7 +2,7 @@ name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
-  APP_INSTANCE: 'ec2-user@16.171.13.66'
+  APP_INSTANCE: 'ec2-user@13.60.46.132'
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
@@ -25,14 +25,14 @@ jobs:
         with:
           languages: 'python'
           queries: security-extended,security-and-quality
-
+          # Reduce memory usage
+          config-file: ./.github/codeql/codeql-config.yml
+      
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
-        with:
-          category: "/language:python"
         env:
-          CODEQL_RAM: "2048"   # 2 GB heap
-          CODEQL_THREADS: "1"
+          CODEQL_RAM: "768"  # 768MB - leave some for OS
+          CODEQL_THREADS: "1"  # Single thread
 
 
 
