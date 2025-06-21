@@ -86,4 +86,6 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://13.60.46.132'
+          fail_action: false
+          issue_title: ''
 
