@@ -78,6 +78,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      issues: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
