@@ -88,5 +88,5 @@ jobs:
         with:
           target: 'http://13.60.46.132'
           fail_action: false
-          issue_title: ''
+          issue_title: 'Security alert detected by ZAP'
 
