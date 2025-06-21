@@ -1,5 +1,5 @@
-name: "Python Security Scan"
-disable-default-queries: false
+name: "Python Security Configuration"
+disable-default-queries: true  # Moved here from workflow
 
 queries:
   - uses: security-and-quality
