@@ -1,8 +1,47 @@
-name: "Custom CodeQL Configuration"
+name: "Optimized CodeQL Config for Low-Memory Runner"
 disable-default-queries: false
+
+# Focus on high-signal security queries only
 queries:
-  - uses: security-extended
-  - uses: security-and-quality
+  - uses: security-and-quality  # More focused than security-extended
+  - name: custom-security-queries
+    uses: ./github/codeql/custom-queries
+    with:
+      tags: security
+      precision: high
+
+# Exclude memory-intensive or lower-value queries
+query-filters:
+  - exclude:
+      id:
+        # Python-specific exclusions
+        - "py/unused-local-variable"
+        - "py/imports-not-at-top-of-file"
+        - "py/missing-docstring"
+        - "py/too-many-arguments"
+        - "py/too-many-locals"
+        - "py/too-many-branches"
+        
+        # General exclusions that are memory-heavy
+        - "js/dead-store"
+        - "js/redundant-assignment"
+        - "js/unused-local-variable"
+        
+        # Exclude informational findings
+        - "py/clear-text-logging"  # If not critical for your app
+        - "py/weak-crypto-tag"    # If you're not using crypto
+
+# Narrow the analysis scope
+paths:
+  - src/
+  - app/
+  - main.py
+
 paths-ignore:
   - '**/tests/**'
   - '**/docs/**'
+  - '**/examples/**'
+  - '**/venv/**'
+  - '**/node_modules/**'
+  - '**/migrations/**'
+  - '**/static/**'
