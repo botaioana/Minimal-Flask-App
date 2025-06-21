@@ -23,13 +23,11 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: 'python'
-          disable-default-queries: true  # Critical fix
-          config-file: ./.github/codeql/codeql-config.yml
+          config-file: ./.github/codeql/codeql-config.yml  # All config goes here
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:python"
+        
   deploy:
     needs: security-scan  # Fixed to match the actual job name above
     runs-on: [self-hosted, linux]
