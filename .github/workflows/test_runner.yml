@@ -6,57 +6,36 @@ env:
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
-  CODEQL_RAM: "768"  # Reduced for t3.micro
-  CODEQL_THREADS: "1"
 
 jobs:
   security-scan:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest  # GitHub-hosted runner (better resources)
     permissions:
       security-events: write
       actions: read
       contents: read
-
+    
     steps:
-      - name: Check disk space
-        run: |
-          df -h
-          # Fail if less than 1GB available
-          if [ $(df --output=avail -BG . | tail -1 | tr -d 'G') -lt 1 ]; then
-            echo "::error::Insufficient disk space (need at least 1GB free)"
-            exit 1
-          fi
-
-      - name: Cleanup workspace
-        run: |
-          sudo rm -rf /home/ec2-user/_work/_temp/*
-          docker system prune -f || true
-
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Initialize CodeQL (v3)
+      - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: 'python'
-          config-file: ./.github/codeql/codeql-config.yml
-          disable-default-queries: true  # Resolves SARIF conflict
-
-      - name: Autobuild Python (custom)
-        if: ${{ failure() && steps.init.outcome == 'failure' }}
-        run: |
-          # Minimal Python build for CodeQL
-          echo "Creating dummy build environment..."
-          mkdir -p python-stubs
-          touch python-stubs/__init__.py
+          queries: security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        env:
-          CODEQL_RAM: ${{ env.CODEQL_RAM }}
-          CODEQL_THREADS: ${{ env.CODEQL_THREADS }}
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-package
+          path: |
+            *
+            !.github/
+            !.gitignore
 
   deploy:
     needs: security-scan  # Fixed to match the actual job name above
