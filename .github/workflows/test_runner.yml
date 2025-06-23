@@ -74,6 +74,7 @@ jobs:
           "
   zap-scan:
     name: ZAP Baseline Scan
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
