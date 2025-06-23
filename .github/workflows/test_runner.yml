@@ -76,6 +76,9 @@ jobs:
     name: ZAP Baseline Scan
     needs: deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
   
     steps:
       - name: ZAP Scan
