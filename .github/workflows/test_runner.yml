@@ -73,21 +73,16 @@ jobs:
               $DOCKER_IMAGE:$DOCKER_TAG
           "
   zap-scan:
-    needs: deploy
+    name: ZAP Baseline Scan
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      issues: write
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
       - name: Run ZAP baseline scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://13.60.46.132'
           fail_action: false
           issue_title: 'Security alert detected by ZAP'
-          cmd_options: '-n' # no reports or zap.yaml written
 
