@@ -2,7 +2,7 @@ name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
-  APP_INSTANCE: 'ec2-user@13.60.46.132'
+  APP_INSTANCE: 'ec2-user@13.61.7.35'
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
