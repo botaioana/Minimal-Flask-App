@@ -27,9 +27,37 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        
+  snyk-docker-scan:
+      needs: security-scan
+      runs-on: ubuntu-latest
+  
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+  
+        - name: Set up Docker
+          uses: docker/setup-buildx-action@v3
+  
+        - name: Log in to Docker Hub (optional, dacă folosești imagini private)
+          run: echo "No login needed"
+  
+        - name: Build Docker image locally
+          run: docker build -t ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} .
+  
+        - name: Install Snyk CLI
+          run: |
+            curl -sL https://snyk.io/install | bash
+            echo "$HOME/.snyk" >> $GITHUB_PATH
+  
+        - name: Authenticate Snyk
+          run: snyk auth ${{ secrets.SNYK_TOKEN }}
+  
+        - name: Scan Docker image with Snyk
+          run: |
+            snyk container test $DOCKER_IMAGE:$DOCKER_TAG --severity-threshold=medium
+
   deploy:
-    needs: security-scan  # Fixed to match the actual job name above
+    needs: snyk-docker-scan
     runs-on: [self-hosted, linux]
     steps:
       - name: Checkout code
