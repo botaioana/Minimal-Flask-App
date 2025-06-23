@@ -77,7 +77,6 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
   
-    # Declare outputs from this job
     outputs:
       alerts_count: ${{ steps.count-alerts.outputs.alerts_count }}
   
@@ -104,3 +103,12 @@ jobs:
           fi
           echo "ZAP Alert count: $count"
           echo "alerts_count=$count" >> "$GITHUB_OUTPUT"
+  
+      - name: Upload ZAP reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-scan-reports       # nume valid, fără underscore și fără majuscule
+          path: |
+            report_json.json
+            report_md.md
+            report_html.html
