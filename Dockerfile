@@ -1,6 +1,6 @@
 FROM python:3.11-slim-bookworm
 
-# Instalează dependințele sistem și Python
+# Instalează și actualizează toate pachetele sistem
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends curl wget && \
