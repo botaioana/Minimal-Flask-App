@@ -1,7 +1,8 @@
-FROM python:3.9-slim
+FROM python:3.11-slim-bookworm
 
 # Instalează dependințele sistem și Python
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends curl wget && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir requests flask
