@@ -1,9 +1,7 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.11-alpine
 
-# Instalează doar dependințele necesare (fără curl/wget dacă nu sunt esențiale)
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    rm -rf /var/lib/apt/lists/* && \
+# Instalează dependințe necesare (Alpine folosește `apk` în loc de `apt`)
+RUN apk add --no-cache gcc musl-dev && \
     pip install --no-cache-dir requests flask
 
 WORKDIR /app
