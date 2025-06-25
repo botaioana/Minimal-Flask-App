@@ -56,7 +56,7 @@ jobs:
   
         - name: Scan Docker image with Snyk
           run: |
-            snyk container test $DOCKER_IMAGE:$DOCKER_TAG --severity-threshold=medium
+            snyk container test flask-app:latest --severity-threshold=medium --file=Dockerfile
 
   deploy:
     needs: snyk-docker-scan
