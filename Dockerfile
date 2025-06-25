@@ -1,6 +1,6 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.13-slim-bookworm
 
-# Instalează doar dependințele necesare
+# Instalează doar dependințele necesare (fără curl/wget dacă nu sunt esențiale)
 RUN apt-get update && \
     apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/* && \
