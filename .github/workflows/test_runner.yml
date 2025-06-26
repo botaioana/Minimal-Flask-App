@@ -38,9 +38,6 @@ jobs:
         - name: Set up Docker
           uses: docker/setup-buildx-action@v3
   
-        - name: Log in to Docker Hub (optional, dacă folosești imagini private)
-          run: echo "No login needed"
-  
         - name: Build Docker image locally
           run: docker build -t ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} .
   
