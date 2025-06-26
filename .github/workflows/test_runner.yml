@@ -2,7 +2,7 @@ name: Security Scan and Deploy to EC2
 on: [push]
 
 env:
-  APP_INSTANCE: 'ec2-user@16.170.224.135'
+  APP_INSTANCE: 'ec2-user@16.171.4.182'
   PROJECT_DIR: '/home/ec2-user/Minimal-Flask-App'
   DOCKER_IMAGE: 'flask-app'
   DOCKER_TAG: 'latest'
@@ -111,4 +111,4 @@ jobs:
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
-          target: 'http://16.170.224.135'
+          target: 'http://16.171.4.182'
