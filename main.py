@@ -1,8 +1,6 @@
 from flask import Flask, request
 import subprocess
-import pickle
 import os
-import sys
 
 app = Flask(__name__)
 
@@ -10,42 +8,25 @@ app = Flask(__name__)
 def hello():
     return "Bun venit la aplicația extrem de nesigură!"
 
-# ⚠️ 1. Command Injection (CWE-78)
+# ⚠️ 1. Command Injection (CWE-78) - DETECTAT (Critical)
 @app.route('/cmd')
 def execute_command():
     cmd = request.args.get('command', 'whoami')
-    return subprocess.check_output(cmd, shell=True)  # NESIGUR: shell=True cu input direct
+    return subprocess.check_output(cmd, shell=True)  # Linia 17
 
-# ⚠️ 2. SQL Injection (CWE-89)
-@app.route('/login')
-def login():
-    username = request.args.get('user')
-    password = request.args.get('pass')
-    query = f"SELECT * FROM users WHERE user='{username}' AND pass='{password}'"  # NESIGUR: concatenare directă
-    return f"Executing: {query}"
-
-# ⚠️ 3. Insecure Deserialization (CWE-502)
-@app.route('/deserialize')
-def deserialize():
-    data = request.args.get('data')
-    return pickle.loads(bytes.fromhex(data))  # NESIGUR: deserializare nesigură
-
-# ⚠️ 4. XSS (CWE-79)
+# ⚠️ 4. XSS (CWE-79) - DETECTAT (Medium) x2
 @app.route('/xss')
 def xss():
     user_input = request.args.get('input', '<script>alert("XSS")</script>')
-    return f"<div>{user_input}</div>"  # NESIGUR: fără escapare
+    return f"<div>{user_input}</div>"  # Linia 25/37 (două detectări)
 
-# ⚠️ 5. Path Traversal (CWE-22)
+# ⚠️ 5. Path Traversal (CWE-22) - DETECTAT (High)
 @app.route('/read')
 def read_file():
     filename = request.args.get('file', '../../etc/passwd')
-    with open(filename, 'r') as f:  # NESIGUR: acces la fișiere fără validare
+    with open(filename, 'r') as f:  # Linia 43
         return f.read()
 
-# ⚠️ 6. Hardcoded Secret (CWE-798)
-API_KEY = "SUPER_SECRET_123"  # NESIGUR: cheie hardcodată
-
-# ⚠️ 7. Debug Mode Enabled (CWE-489)
+# ⚠️ 7. Debug Mode Enabled (CWE-489) - DETECTAT (High)
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)  # NESIGUR: debug în producție
+    app.run(host='0.0.0.0', port=5000, debug=True)  # Linia 51
