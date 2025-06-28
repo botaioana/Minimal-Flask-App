@@ -1,11 +1,9 @@
-name: "Custom Python Security Scan"
+name: "Python Security Scan"
 disable-default-queries: true
 
 queries:
   - uses: security-extended
   - uses: security-experimental
-  - name: Custom Flask debug query
-    uses: ./.github/codeql-queries/FlaskDebug.ql  # Dacă ai query-uri custom
 
 paths-ignore:
   - '**/tests/**'
