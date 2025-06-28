@@ -1,12 +1,17 @@
-name: "Python Security Extended Analysis"
+name: "Custom Python Security Scan"
 disable-default-queries: true
 
 queries:
-  - uses: security-and-quality
-  
+  - uses: security-and-quality/python/ql/src/Security
+  - uses: security-and-quality/python/ql/src/experimental/Security
+  - name: Flask-specific queries
+    uses: security-and-quality/python/ql/src/Security/CWE-215/FlaskDebug.ql
+  - name: Command injection
+    uses: security-and-quality/python/ql/src/Security/CWE-078/CommandInjection.ql
+
 paths-ignore:
   - '**/tests/**'
-  - '**/docs/**'
+  - '**/node_modules/**'
   - '**/venv/**'
 
 languages:
