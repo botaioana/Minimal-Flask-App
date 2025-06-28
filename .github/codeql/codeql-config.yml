@@ -1,7 +1,10 @@
 name: "Python Security Configuration"
-disable-default-queries: false  # păstrează interogările implicite
+disable-default-queries: false
 
 paths-ignore:
   - '**/tests/**'
   - '**/docs/**'
   - '**/venv/**'
+
+languages:
+  - python
