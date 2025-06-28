@@ -1,5 +1,5 @@
 from flask import Flask, request
-import os
+import subprocess
 
 app = Flask(__name__)
 
@@ -11,12 +11,19 @@ def hello():
 def health():
     return "OK", 200
 
-# Endpoint vulnerabil la command injection
+# ⚠️ Command Injection — subprocess cu input nesanitizat
 @app.route('/ping')
 def ping():
     host = request.args.get('host', '127.0.0.1')
-    output = os.popen(f"ping -c 1 {host}").read()  # ⚠️ Command Injection
-    return f"<pre>{output}</pre>"
+    output = subprocess.check_output(f"ping -c 1 {host}", shell=True)  # GHAS vede asta
+    return f"<pre>{output.decode()}</pre>"
+
+# ⚠️ Eval Injection — code execution
+@app.route('/eval')
+def eval_test():
+    code = request.args.get('code', 'print("no code")')
+    result = eval(code)  # GHAS va detecta asta garantat
+    return f"<pre>{result}</pre>"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)  # ⚠️ debug=True în producție e vulnerabil
+    app.run(host='0.0.0.0', port=5000, debug=True)  # ⚠️ debug=True în producție
