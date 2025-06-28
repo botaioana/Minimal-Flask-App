@@ -1,6 +1,9 @@
-name: "Python Security Configuration"
-disable-default-queries: false
+name: "Python Security Extended Analysis"
+disable-default-queries: true
 
+queries:
+  - uses: security-and-quality
+  
 paths-ignore:
   - '**/tests/**'
   - '**/docs/**'
