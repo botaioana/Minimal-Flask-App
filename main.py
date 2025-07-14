@@ -3,7 +3,15 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return "Salut! Aplicatia functionează corect!"
+    return '''
+        <html>
+            <head><title>Poza mea</title></head>
+            <body>
+                <h1>Salut! Aplicația funcționează corect!</h1>
+                <img src="/static/image.jpg" alt="Imagine" width="300">
+            </body>
+        </html>
+    '''
 
 @app.route('/health')
 def health():
