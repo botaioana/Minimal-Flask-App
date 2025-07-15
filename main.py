@@ -5,7 +5,7 @@ app = Flask(__name__)
 def hello():
     return '''
         <html>
-            <head><title>Poza mea</title></head>
+            <head><title>Bota I. - Licenta</title></head>
             <body>
                 <h1>Salut! Aplicația funcționează corect!</h1>
                 <img src="/static/image.jpg" alt="Imagine" width="300">
